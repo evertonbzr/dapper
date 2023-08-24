@@ -44,7 +44,15 @@ export class DapperObject extends DapperAny {
     this.typedString = this.prevIsOptional() + ": {\n";
     Object.keys(this.shape).forEach((key) => {
       const value = this.shape[key];
-      this.typedString += `${makeSize(tabSize + 2)}${key}${value.parse()}\n`;
+      let valueParsed;
+
+      if (value instanceof DapperObject) {
+        valueParsed = value.parse(tabSize + 2);
+      } else {
+        valueParsed = value.parse();
+      }
+
+      this.typedString += `${makeSize(tabSize + 2)}${key}${valueParsed}\n`;
     });
     this.typedString += makeSize(tabSize) + "};";
     return this.typedString;
@@ -61,18 +69,23 @@ export type DapperRawShape<T extends DapperAny = DapperAny> = {
 
 export type DapperTypeParams<T extends DapperRawShape> = {
   name: string;
+  tabSize?: number;
+  mode?: "type" | "interface";
   fields: T;
 };
 
 export class DapperType<T extends DapperRawShape> extends DapperAny {
   private typedString = "";
-  name: string;
-  fields: T;
+
+  private name: string;
+  private fields: T;
+  private _tabSize: number = 2;
 
   constructor(params: DapperTypeParams<T>) {
     super();
     this.name = params.name;
     this.fields = params.fields;
+    this._tabSize = params.tabSize || 2;
   }
 
   parse = (tabSize: number = 0) => {
@@ -82,12 +95,14 @@ export class DapperType<T extends DapperRawShape> extends DapperAny {
       let valueParsed;
 
       if (value instanceof DapperObject) {
-        valueParsed = value.parse(tabSize + 2);
+        valueParsed = value.parse(tabSize + this._tabSize);
       } else {
         valueParsed = value.parse();
       }
 
-      this.typedString += `${makeSize(tabSize + 2)}${key}${valueParsed}\n`;
+      this.typedString += `${makeSize(
+        tabSize + this._tabSize
+      )}${key}${valueParsed}\n`;
     });
     this.typedString += makeSize(tabSize) + "};" + this.hasIsNullable() + "\n";
     return this.typedString;
