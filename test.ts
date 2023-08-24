@@ -10,24 +10,4 @@ const typeMounted = d.type({
   },
 });
 
-console.log(
-  d
-    .object(
-      {
-        name: d.string().optional().nullable(),
-        age: d.integer().optional(),
-        done: d.boolean()
-      },
-      "key"
-    )
-    .optional()
-    .parse()
-);
-
-type test = {
-  key: {
-    name?: string | null;
-    age: bigint;
-    done: boolean;
-  };
-};
+console.log(typeMounted.parse());
