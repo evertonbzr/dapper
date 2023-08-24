@@ -5,7 +5,24 @@ const typeMounted = d.type({
   fields: {
     id: d.integer(),
     people: d.object({
-      age: d.integer(),
-    })
-  }
+      age: d.string().optional(),
+    }),
+  },
 });
+
+console.log(
+  d
+    .object(
+      {
+        name: d.string("name"),
+      },
+      "key"
+    )
+    .parse()
+);
+
+type test = {
+  key: {
+    name: string;age:number;
+  };
+};
