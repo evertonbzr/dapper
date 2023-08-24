@@ -14,15 +14,20 @@ console.log(
   d
     .object(
       {
-        name: d.string("name"),
+        name: d.string().optional().nullable(),
+        age: d.integer().optional(),
+        done: d.boolean()
       },
       "key"
     )
+    .optional()
     .parse()
 );
 
 type test = {
   key: {
-    name: string;age:number;
+    name?: string | null;
+    age: bigint;
+    done: boolean;
   };
 };

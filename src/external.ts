@@ -1,6 +1,35 @@
 import { makeSize } from "./helpers/tabUtils";
 
 export abstract class DapperAny {
+  protected _optional: boolean = false;
+  protected _nullable: boolean = false;
+
+  protected isOptional() {
+    return this._optional;
+  }
+
+  protected isNullable() {
+    return this._nullable;
+  }
+
+  protected prevIsOptional() {
+    return this._optional ? "?" : "";
+  }
+
+  protected hasIsNullable() {
+    return this._nullable ? " | null" : "";
+  }
+
+  optional = () => {
+    this._optional = true;
+    return this;
+  };
+
+  nullable = () => {
+    this._nullable = true;
+    return this;
+  };
+
   parse: () => string;
 }
 
@@ -32,7 +61,6 @@ export class DapperType<T extends DapperRawShape> extends DapperAny {
 
 export class DapperObject extends DapperAny {
   private typedString = "";
-  private _optional: boolean = false;
   private _key: string;
 
   constructor(private shape: DapperRawShape, key?: string) {
@@ -41,18 +69,14 @@ export class DapperObject extends DapperAny {
   }
 
   parse = (tabSize: number = 0) => {
-    this.typedString = makeSize(tabSize) + this._key + ": {\n";
+    this.typedString =
+      makeSize(tabSize) + (this._key + this.prevIsOptional()) + ": {\n";
     Object.keys(this.shape).forEach((key) => {
       const value = this.shape[key];
-      this.typedString += `${makeSize(tabSize + 2)}${key}: ${value.parse()};\n`;
+      this.typedString += `${makeSize(tabSize + 2)}${key}${value.parse()}\n`;
     });
     this.typedString += makeSize(tabSize) + "};";
     return this.typedString;
-  };
-
-  optional = () => {
-    this._optional = true;
-    return this;
   };
 
   static create = (shape: DapperRawShape, key?: string) => {
@@ -60,52 +84,29 @@ export class DapperObject extends DapperAny {
   };
 }
 
-export class DapperInteger extends DapperAny {
+export class DapperKind extends DapperAny {
   private typedString = "";
-  private _optional: boolean = false;
-  private _key: string;
+  private type: string;
 
-  constructor(key?: string) {
+  constructor(type: string) {
     super();
-    this._key = key || "random";
+    this.type = type;
   }
 
   parse = () => {
+    this.typedString =
+      this.prevIsOptional() + ": " + this.type + this.hasIsNullable() + ";";
     return this.typedString;
   };
 
-  optional = () => {
-    this._optional = true;
-    return this;
-  };
-
-  static create = (key?: string) => {
-    return new DapperInteger(key);
-  };
-}
-
-export class DapperString extends DapperAny {
-  private _optional: boolean = false;
-  private _key: string;
-
-  constructor(key?: string) {
-    super();
-    this._key = key || "random";
-  }
-
-  parse = () => "dapper";
-
-  optional = () => {
-    this._optional = true;
-    return this;
-  };
-
-  static create = (key?: string) => {
-    return new DapperString(key);
+  static create = (type: string) => {
+    return new DapperKind(type);
   };
 }
 
 export const type = DapperType.create;
 export const object = DapperObject.create;
-export const integer = DapperInteger.create;
-export const string = DapperString.create;
+export const integer = () => DapperKind.create("number");
+export const bigint = () => DapperKind.create("bigint");
+export const string = () => DapperKind.create("string");
+export const boolean = () => DapperKind.create("boolean");
