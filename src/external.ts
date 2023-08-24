@@ -138,4 +138,5 @@ export const object = DapperObject.create;
 export const integer = () => DapperKind.create("number");
 export const bigint = () => DapperKind.create("bigint");
 export const string = () => DapperKind.create("string");
+export const ostring = () => DapperKind.create("string").optional();
 export const boolean = () => DapperKind.create("boolean");
