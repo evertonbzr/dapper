@@ -1,7 +1,22 @@
 {
-  "name": "dapper",
+  "name": "dapper-typed",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "private": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch ./_code.ts"
+  },
+  "author": "Everton Fernandes",
+  "keywords": [
+    "typescript",
+    "type",
+    "builder"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.5.4",

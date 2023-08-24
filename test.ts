@@ -1,4 +1,4 @@
-import { d } from "./src/index";
+import { d } from "./dist/index";
 
 const schemaTypeUser = d.type({
   name: "v1CreateUser",
@@ -15,3 +15,15 @@ const schemaTypeUser = d.type({
 
 
 console.log(schemaTypeUser)
+
+// Expected output:
+
+// type v1CreateUser = {
+//   name?: string;
+//   age: number;
+//   email: string;
+//   password: string;
+//   address?: {
+//     street: string;
+//   };
+// };
