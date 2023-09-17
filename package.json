@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx --watch ./_code.ts"
+    "dev": "tsx test.ts"
   },
   "author": "Everton Fernandes",
   "keywords": [

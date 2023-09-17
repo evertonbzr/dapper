@@ -33,6 +33,10 @@ export abstract class DapperAny {
   parse: () => string;
 }
 
+export type DapperRawShape<T extends DapperAny = DapperAny> = {
+  [k: string]: T;
+};
+
 export class DapperObject extends DapperAny {
   private typedString = "";
 
@@ -62,16 +66,12 @@ export class DapperObject extends DapperAny {
     return new DapperObject(shape);
   };
 }
-
-export type DapperRawShape<T extends DapperAny = DapperAny> = {
-  [k: string]: T;
-};
-
 export type DapperTypeParams<T extends DapperRawShape> = {
   name: string;
   tabSize?: number;
   mode?: "type" | "interface";
   fields: T;
+  exported?: boolean;
 };
 
 export class DapperType<T extends DapperRawShape> extends DapperAny {
@@ -80,16 +80,29 @@ export class DapperType<T extends DapperRawShape> extends DapperAny {
   private name: string;
   private fields: T;
   private _tabSize: number = 2;
+  private mode: "type" | "interface" = "type";
+  private exported: boolean = false;
 
   constructor(params: DapperTypeParams<T>) {
     super();
     this.name = params.name;
     this.fields = params.fields;
     this._tabSize = params.tabSize || 2;
+    this.mode = params.mode || "type";
+    this.exported = params.exported || false;
   }
 
   parse = (tabSize: number = 0) => {
-    this.typedString = makeSize(tabSize) + "type " + this.name + " = {\n";
+    const isType = this.mode === "type";
+    const isExported = this.exported;
+
+    this.typedString =
+      makeSize(tabSize) +
+      (isExported ? "export " : "") +
+      (isType ? "type " : "interface ") +
+      this.name +
+      ` ${isType ? "= " : ""}{\n`;
+
     Object.keys(this.fields).forEach((key) => {
       const value = this.fields[key];
       let valueParsed;
@@ -133,7 +146,52 @@ export class DapperKind extends DapperAny {
   };
 }
 
+export class DapperNamespace extends DapperAny {
+  private typedString = "";
+  private name: string;
+  private types: DapperType<any>[];
+  private _tabSize: number = 2;
+  private exported: boolean = false;
+
+  constructor(params: {
+    name: string;
+    exported?: boolean;
+    types: DapperType<any>[];
+  }) {
+    super();
+    this.name = params.name;
+    this.types = params.types;
+    this.exported = params.exported || false;
+  }
+
+  parse = (tabSize: number = 0) => {
+    const isExported = this.exported;
+
+    this.typedString =
+      (isExported ? "export " : "") + `namespace ${this.name} {\n`;
+    Object.keys(this.types).forEach((key) => {
+      const value = this.types[key];
+      let valueParsed;
+
+      valueParsed = value.parse(tabSize + this._tabSize);
+
+      this.typedString += `${valueParsed}`;
+    });
+    this.typedString += "}";
+    return this.typedString;
+  };
+
+  static create = (params: {
+    name: string;
+    exported?: boolean;
+    types: DapperType<any>[];
+  }) => {
+    return new DapperNamespace(params);
+  };
+}
+
 export const type = DapperType.create;
+export const namespace = DapperNamespace.create;
 export const object = DapperObject.create;
 export const integer = () => DapperKind.create("number");
 export const bigint = () => DapperKind.create("bigint");

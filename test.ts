@@ -1,20 +1,37 @@
-import { d } from "./dist/index";
+import { d } from "./src/index";
+
+namespace da {
+  export type v1CreateUser = {
+    name?: string;
+  };
+}
 
 const schemaTypeUser = d.type({
-  name: "v1CreateUser",
+  name: "Body",
+  mode: "interface",
+  exported: true,
   fields: {
     name: d.ostring(),
     age: d.integer(),
     email: d.string(),
     password: d.string(),
-    address: d.object({
-      street: d.string(),
-    }).optional()
+    address: d
+      .object({
+        street: d.string(),
+      })
+      .optional(),
   },
-}).parse();
+});
 
+const namespace = d
+  .namespace({
+    name: "V1GetUser",
+    exported: true,
+    types: [schemaTypeUser, schemaTypeUser],
+  })
+  .parse();
 
-console.log(schemaTypeUser)
+console.log(namespace);
 
 // Expected output:
 
@@ -27,3 +44,26 @@ console.log(schemaTypeUser)
 //     street: string;
 //   };
 // };
+
+export namespace V1GetUser {
+  export interface Body {
+    name?: string;
+    age: number;
+    email: string;
+    password: string;
+    address?: {
+      street: string;
+    };
+  }
+  export interface Body {
+    name?: string;
+    age: number;
+    email: string;
+    password: string;
+    address?: {
+      street: string;
+    };
+  }
+}
+
+type t = V1GetUser.Body;
