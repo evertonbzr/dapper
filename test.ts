@@ -14,10 +14,11 @@ const schemaTypeUser = d.type({
     name: d.ostring(),
     age: d.integer(),
     email: d.string(),
+    roles: d.inlineText("(V1DaleDele | V1DaleDele2)[]").optional(),
     password: d.string(),
     address: d
       .object({
-        street: d.string(),
+        street: d.string().nullable(),
       })
       .optional(),
   },
@@ -27,43 +28,24 @@ const namespace = d
   .namespace({
     name: "V1GetUser",
     exported: true,
-    types: [schemaTypeUser, schemaTypeUser],
+    types: [schemaTypeUser],
   })
   .parse();
 
 console.log(namespace);
-
-// Expected output:
-
-// type v1CreateUser = {
-//   name?: string;
-//   age: number;
-//   email: string;
-//   password: string;
-//   address?: {
-//     street: string;
-//   };
-// };
 
 export namespace V1GetUser {
   export interface Body {
     name?: string;
     age: number;
     email: string;
-    password: string;
-    address?: {
-      street: string;
-    };
-  }
-  export interface Body {
-    name?: string;
-    age: number;
-    email: string;
+    roles: {
+      name: string;
+    }[];
     password: string;
     address?: {
       street: string;
     };
   }
 }
-
 type t = V1GetUser.Body;

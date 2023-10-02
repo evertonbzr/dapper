@@ -66,6 +66,37 @@ export class DapperObject extends DapperAny {
     return new DapperObject(shape);
   };
 }
+
+export class DapperArray extends DapperAny {
+  private typedString = "";
+  private shape: DapperAny | DapperKind;
+
+  constructor(shape: DapperAny | DapperKind) {
+    super();
+    this.shape = shape;
+  }
+
+  parse = (tabSize: number = 0) => {
+    this.typedString = this.prevIsOptional();
+
+    if (this.shape instanceof DapperObject) {
+      this.typedString += this.shape.parse(tabSize + 4).slice(0, -1);
+      this.typedString += "[];";
+    }
+
+    if (this.shape instanceof DapperKind) {
+      this.typedString += this.shape.parse().slice(0, -1);
+      this.typedString += "[];";
+    }
+
+    return this.typedString;
+  };
+
+  static create = (type: DapperAny | DapperKind) => {
+    return new DapperArray(type);
+  };
+}
+
 export type DapperTypeParams<T extends DapperRawShape> = {
   name: string;
   tabSize?: number;
@@ -190,9 +221,30 @@ export class DapperNamespace extends DapperAny {
   };
 }
 
+export class DapperInlineText extends DapperAny {
+  private typedString = "";
+  private type: string;
+
+  constructor(type: string) {
+    super();
+    this.type = type;
+  }
+
+  parse = () => {
+    this.typedString = this.prevIsOptional() + ": " + this.type;
+    return this.typedString;
+  };
+
+  static create = (type: string) => {
+    return new DapperKind(type);
+  };
+}
+
+export const inlineText = (type: string) => DapperInlineText.create(type);
 export const type = DapperType.create;
 export const namespace = DapperNamespace.create;
 export const object = DapperObject.create;
+export const array = DapperArray.create;
 export const integer = () => DapperKind.create("number");
 export const bigint = () => DapperKind.create("bigint");
 export const string = () => DapperKind.create("string");
